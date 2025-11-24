@@ -84,21 +84,11 @@ L'interface a été pensée pour être fluide et intuitive :
 * **Code Couleur :** Respect de la charte graphique de Terroir & Cie.
 * **Feedback Utilisateur :** Notifications claires et pop-ups d'authentification.
 
-*(Insérer ici une capture d'écran de la page d'accueil ou du catalogue si disponible)*
+![WhatsApp Image 2025-11-24 at 21 23 15_ac58ec43](https://github.com/user-attachments/assets/84055bcd-f477-4341-879f-b16fd4753eac)
+![WhatsApp Image 2025-11-24 at 21 23 29_e8533805](https://github.com/user-attachments/assets/9d744d17-bd67-4696-9069-57594b6c4272)
+
 
 ---
 
-## 🛠️ Installation et Lancement
-
-*Instructions pour lancer le projet en local (à compléter selon votre stack technique, exemple ci-dessous)* :
-
-1.  Cloner le dépôt :
-    `git clone https://github.com/votre-repo/technasoul-terroir.git`
-2.  Installer les dépendances :
-    `npm install` (ou `pip install -r requirements.txt` selon le langage)
-3.  Configurer la base de données.
-4.  Lancer le serveur.
-
----
 
 *Ce projet a été réalisé dans le cadre du cours de conception d'applications d'etntreprise - 2024/2025.*
