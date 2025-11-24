@@ -94,4 +94,4 @@ L'interface a été pensée pour être fluide et intuitive :
 
 
 *Ce projet a été réalisé dans le cadre du cours de conception d'applications d'etntreprise - 2024/2025.*
-![Note](https://img.shields.io/badge/Note_Finale-17.8%2F20-brightgreen?style=for-the-badge&logo=school)
+**🏆 Note obtenue : 17,8 / 20**
