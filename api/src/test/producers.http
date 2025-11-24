@@ -1,0 +1,50 @@
+@baseUrl = http://localhost:3000
+
+### Create a manager (can fail with 409 if already created)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "manager",
+  "password": "manager",
+  "title": "Mr",
+  "firstname": "manager",
+  "lastname": "User",
+  "phoneNumber": "1234567890",
+  "role": "MANAGER",
+  "accountCreatorManager":"manager",
+  "address": {
+    "street": "123 manager St",
+    "number": "1",
+    "postalCode": "12345",
+    "country": "USA",
+    "city": "NYC"
+  }
+  
+}
+
+### Login the manager user (status code: 200)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "manager",
+  "password": "manager"
+}
+
+> {%
+  client.global.set("adminToken", response.body.token);
+%}
+
+### get all producers (status code: 200)
+GET {{baseUrl}}/producers/
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+### get all lots for producer oe empty list if producer has no lot (status code: 200)
+GET {{baseUrl}}/producers/lots?email=producer@terroircie.be
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+
+

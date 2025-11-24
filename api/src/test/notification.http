@@ -1,0 +1,60 @@
+### 1. create notification
+POST http://localhost:3000/notifications
+Content-Type: application/json
+
+{ 
+    "notifiedUser": "admin@terroircie.be",
+    "notificationTitle": "Bienvenueeeeee",
+    "message": "Votre compte a été créé avec succès"
+}
+
+### Login the user
+POST http://localhost:3000/auths/login
+Content-Type: application/json
+
+{
+  "email": "producer@terroircie.be",
+  "password": "Password1!"
+}
+
+> {%
+  client.global.set("userToken", response.body.token);
+%}
+
+### 2. get notification(s) send to a user by his email order by date desc (200)
+GET http://localhost:3000/notifications/?email=producer@terroircie.be
+Content-Type: application/json
+Authorization: {{userToken}}
+### try to get notification(s) with non existing user (404)
+GET http://localhost:3000/notifications/?email=pppppppppppp
+Content-Type: application/json
+
+### 4. mark a notification as read (200)
+PUT http://localhost:3000/notifications/2/read
+Content-Type: application/json
+Authorization: {{userToken}}
+
+### mark a notification as read with invalid id (400)
+PUT http://localhost:3000/notifications/pp/read
+Content-Type: application/json
+
+### 5. mark all notifications as read for a user (200)
+PUT http://localhost:3000/notifications/read-all?email=producer@terroircie.be
+Content-Type: application/json
+Authorization: {{userToken}}
+### Login the user
+POST http://localhost:3000/auths/login
+Content-Type: application/json
+
+{
+  "email": "admin@terroircie.be",
+  "password": "Admin1-"
+}
+
+> {%
+  client.global.set("invalidToken", response.body.token);
+%}
+### get notification(s) send to a user with a forbbiden user (403)
+GET http://localhost:3000/notifications/?email=producer@terroircie.be
+Content-Type: application/json
+Authorization: {{invalidToken}}

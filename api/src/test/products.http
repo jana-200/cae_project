@@ -1,0 +1,43 @@
+@baseUrl = http://localhost:3000
+
+###  Get all products (200)
+GET {{baseUrl}}/products/
+
+###  Get products starting with "Ap" (200)
+GET {{baseUrl}}/products/?label=Ap
+
+###  Get products starting with "jui" (200)
+GET {{baseUrl}}/products/?label=JUI
+
+###  Get products with empty label (should return all) (200)
+GET {{baseUrl}}/products/?label=
+
+### Get products with no label param (same as above) (200)
+GET {{baseUrl}}/products/
+
+###  Case-insensitive search (200)
+GET {{baseUrl}}/products/?label=ap
+
+###  Non-existent prefix (should return empty list) (200)
+GET {{baseUrl}}/products/?label=XYZUnknown
+
+### Login user
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "producer@example.com",
+  "password": "password123"
+}
+
+> {%
+  client.global.set("userToken", response.body.token);
+%}
+
+### Get images for product ID 2 (200)
+GET {{baseUrl}}/products/2/images
+Authorization: {{userToken}}
+
+### Get images for product ID 2 (404)
+GET {{baseUrl}}/products/100000000/images
+Authorization: {{userToken}}

@@ -1,0 +1,380 @@
+@baseUrl = http://localhost:3000
+
+### Try to login an unknown user (should return 401)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "unknown",
+  "password": "admin"
+}
+
+
+### Create the volunteer account (can fail with 409 if already created)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "volunteer@terroircie.be",
+  "password": "VolunteerAccess123-",
+  "title": "Ms",
+  "firstname": "Bénévole",
+  "lastname": "User",
+  "phoneNumber": "00000000000",
+  "role": "MANAGER",
+  "address": {
+    "street": "Rue du Bon Terroir",
+    "number": "7",
+    "postalCode": "6980",
+    "country": "Belgique",
+    "city": "Valfontaine"
+  }
+}
+
+### Create the default admin (can fail with 409 if already created)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "adminEmail",
+  "password": "admin",
+  "title": "Mr",
+  "firstname": "Admin",
+  "lastname": "User",
+  "phoneNumber": "1234567890",
+  "role": "MANAGER",
+  "accountCreatorManager":"admin",
+  "address": {
+    "street": "123 Admin St",
+    "number": "1",
+    "postalCode": "12345",
+    "country": "USA",
+    "city": "NYC"
+  }
+}
+
+### Create a user (can fail with 409 if already created)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "user",
+  "password": "user",
+  "title": "Mr",
+  "firstname": "Regular",
+  "lastname": "User",
+  "phoneNumber": "1234567890",
+  "role": "CUSTOMER",
+  "address": {
+    "street": "789 User Road",
+    "number": "5",
+    "postalCode": "99999",
+    "country": "USA",
+    "city": "Chicago"
+  }
+}
+
+
+### Login the admin user (status code: 200)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "adminEmail",
+  "password": "admin"
+}
+
+> {%
+  console.log(response.body);
+  client.global.set("adminToken", response.body.token);
+%}
+
+### Try to change password (200)
+POST {{baseUrl}}/auths/change-password
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "currentPassword": "admin",
+  "newPassword": "admin1"
+}
+
+### Try to change password again (200)
+POST {{baseUrl}}/auths/change-password
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "currentPassword": "admin1",
+  "newPassword": "admin"
+}
+
+### Try to change password again with incorect current password (401)
+POST {{baseUrl}}/auths/change-password
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "currentPassword": "admin11111",
+  "newPassword": "admin"
+}
+### Try to change password again with incorect current password (400)
+POST {{baseUrl}}/auths/change-password
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "newPassword": "admin"
+}
+
+### Try to access /profile   (succes 200)
+GET {{baseUrl}}/auths/profile
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+########## UNAUTHORIZED ACCESS TESTS ##########
+
+### Try to access /me without token (error 403)
+GET {{baseUrl}}/auths/me
+
+### Try to access /profile without token (error 403)
+GET {{baseUrl}}/auths/profile
+
+### Try to change password without token (error 403)
+POST {{baseUrl}}/auths/change-password
+Content-Type: application/json
+Authorization:  invalidtoken
+
+{
+  "currentPassword": "admin123",
+  "newPassword": "newadmin123"
+}
+
+### Try to access /me with invalid token (error 403)
+GET {{baseUrl}}/auths/me
+Authorization:  invalidtoken
+
+########## LOGIN WITH NEW PASSWORDS ##########
+### Login admin with new password (should succeed 200)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "adminEmail",
+  "password": "newadmin123"
+}
+
+### Login admin with old password (error 401)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "adminEmail",
+  "password": "admin"
+}
+
+
+### Create the manager user (can fail with 409 if already created)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "manager",
+  "password": "manager",
+  "title": "Ms",
+  "firstname": "Manager",
+  "lastname": "User",
+  "phoneNumber": "0987654321",
+  "role": "MANAGER",
+  "address": {
+    "street": "456 Manager Ave",
+    "number": "2",
+    "postalCode": "54321",
+    "country": "USA",
+    "city": "NYC"
+  }
+}
+
+### Login the manager user (status code 200)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "manager",
+  "password": "manager"
+}
+
+### Register a new manager created by another manager
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "manager2@example.com",
+  "password": "password123",
+  "title": "Mme",
+  "firstname": "Second",
+  "lastname": "Manager",
+  "phoneNumber": "0123456789",
+  "role": "MANAGER",
+  "accountCreatorManager": "manager",
+  "address": {
+    "street": "456 Rue Manager",
+    "number": "3",
+    "postalCode": "1000",
+    "country": "Belgique",
+    "city": "Bruxelles"
+  }
+}
+
+### Register a producer with company name
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "producer@example.com",
+  "password": "password123",
+  "title": "Mr",
+  "firstname": "Prod",
+  "lastname": "User",
+  "phoneNumber": "0123456789",
+  "role": "PRODUCER",
+  "address": {
+    "street": "789 Rue Production",
+    "number": "4",
+    "postalCode": "1000",
+    "country": "Belgique",
+    "city": "Namur"
+  },
+  "companyName": "Fruits du Soleil"
+}
+
+### Register without email (error 400)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "password": "user",
+  "title": "Mr",
+  "firstname": "NoMail",
+  "lastname": "User",
+  "phoneNumber": "0000000000",
+  "role": "CUSTOMER",
+  "address": {
+    "street": "123 Street",
+    "number": "5",
+    "postalCode": "11111",
+    "country": "USA",
+    "city": "Nowhere"
+  }
+}
+
+### Register without password (error 400)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "nopassword@example.com",
+  "title": "Mr",
+  "firstname": "NoPassword",
+  "lastname": "User",
+  "phoneNumber": "0000000000",
+  "role": "CUSTOMER",
+  "address": {
+    "street": "456 Street",
+    "number": "6",
+    "postalCode": "22222",
+    "country": "USA",
+    "city": "Nowhere"
+  }
+}
+
+### Register without address (error 400)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "noaddress@example.com",
+  "password": "test123",
+  "title": "Ms",
+  "firstname": "NoAddress",
+  "lastname": "User",
+  "phoneNumber": "0000000000",
+  "role": "CUSTOMER"
+}
+
+### Login with wrong password (error 401)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "adminEmail",
+  "password": "wrongpassword"
+}
+
+### Login with empty email (error 400)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": "admin"
+}
+
+
+### Login with invalid credentials format (error 400)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}
+
+
+### Register a producer with company name
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "producer1@example.com",
+  "password": "Password123$",
+  "title": "Mr",
+  "firstname": "Prod",
+  "lastname": "User",
+  "phoneNumber": "0123456789",
+  "role": "PRODUCER",
+  "address": {
+    "street": "789 Rue Production",
+    "number": "4",
+    "postalCode": "1000",
+    "country": "Belgique",
+    "city": "Namur"
+  },
+  "companyName": "Fruits du Soleil"
+}
+
+### Login the manager user (status code 200)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "producer1@example.com",
+  "password": "Password123$"
+}
+
+### Deactivate a user or reactivate if deactivated (200) or) if non existing email
+POST {{baseUrl}}/auths/deactivate/?email=test1746469745205@example.com
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+### Check if a user is deactivated should return true if deactivated or false (200)
+GET {{baseUrl}}/auths/deactivated/test1746469745205@example.com
+Authorization: {{adminToken}}
+
+### Check if a user is deactivated with non existing email (404)
+GET {{baseUrl}}/auths/deactivated/notfounduemail
+Authorization: {{adminToken}}
+
+### Check if a user is deactivated with non email (400)
+GET {{baseUrl}}/auths/deactivated/
+Authorization: {{adminToken}}

@@ -1,0 +1,308 @@
+@baseurl = http://localhost:3000
+
+###  Get all product lots
+# Expected: 200 OK
+GET {{baseurl}}/product-lots/
+Accept: application/json
+
+###  Get the 5 most recent lots for sale
+# Expected: 200 OK
+GET {{baseurl}}/product-lots/recent
+Accept: application/json
+
+
+###  Get all lots pending
+# Expected: 200 OK
+GET {{baseurl}}/product-lots/?state=PENDING
+Accept: application/json
+
+###  Get lot by it's corresponding id (1)
+# Expected: 200 OK
+GET {{baseurl}}/product-lots/1
+Accept: application/json
+
+###  Get lot by unexisting id (1000)
+# Expected: 404 OK
+GET {{baseurl}}/product-lots/1000
+Accept: application/json
+
+
+###  Get all lots available by a specific producer (by email)
+# Expected: 200 OK
+GET {{baseurl}}/product-lots/?state=FOR_SALE&email=producer@example.com
+Accept: application/json
+
+###
+# Expected: 200 OK
+
+GET {{baseurl}}/product-lots/?state=PENDING&email=producer1@example.com
+Accept: application/json
+
+###  Get all lots by producer (query param variant)
+# Expected: 200 OK
+GET {{baseurl}}/product-lots/?email=produce4@example.com
+Accept: application/json
+
+###  Get all sold-out lots
+# Expected: 200 OK
+GET {{baseurl}}/product-lots/?state=SOLD_OUT
+Accept: application/json
+
+### Login the admin user (status code: 200)
+POST {{baseurl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "manager2@example.com",
+  "password": "password123"
+}
+
+> {%
+  client.global.set("adminToken", response.body.token);
+%}
+
+### Update lot state - valid request (lot exists)
+# Expected: 200 OK
+PUT {{baseurl}}/product-lots/1/state?newState=ACCEPTED
+Authorization: {{adminToken}}
+
+### Update lot state - lot does not exist
+# Expected: 404 Not Found
+PUT {{baseurl}}/product-lots/9999/state?newState=REJECTED
+Authorization: {{adminToken}}
+
+### Update lot state - invalid state value
+# Expected: 400 Bad Request
+PUT {{baseurl}}/product-lots/1/state?newState=INVALID_STATE
+Authorization: {{adminToken}}
+
+---
+
+### Login user
+POST {{baseurl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "producer@example.com",
+  "password": "password123"
+}
+
+> {%
+  client.global.set("userToken", response.body.token);
+%}
+
+###  Create lot for existing product without image
+# Expected: 400 Bad Request (image is required)
+POST {{baseurl}}/product-lots/
+Content-Type: multipart/form-data; boundary=boundary
+Authorization: {{userToken}}
+Accept: application/json
+
+--boundary
+Content-Disposition: form-data; name="NewProductLot"
+Content-Type: application/json
+
+{
+  "productLabel": "Golden Apple",
+  "productType": "Fruits",
+  "producer": 1,
+  "unitPrice": 3.0,
+  "initialQuantity": 50,
+  "availabilityDate": "2025-04-10T00:00:00"
+}
+--boundary--
+
+---
+
+###  Create lot with missing required fields
+# Expected: 400 Bad Request (invalid input data)
+POST {{baseurl}}/product-lots/
+Content-Type: multipart/form-data; boundary=boundary
+Authorization: {{userToken}}
+Accept: application/json
+
+--boundary
+Content-Disposition: form-data; name="NewProductLot"
+Content-Type: application/json
+
+{
+  "productLabel": "",
+  "productType": "",
+  "producer": null,
+  "unitPrice": 0,
+  "initialQuantity": 0,
+  "availabilityDate": null
+}
+--boundary
+Content-Disposition: form-data; name="image"; filename="fake.png"
+Content-Type: image/png
+
+FAKE_IMAGE_DATA
+--boundary--
+
+---
+
+###  Create a new product and lot with image
+# Expected: 201 Created
+POST {{baseurl}}/product-lots/
+Content-Type: multipart/form-data; boundary=boundary
+Authorization: {{userToken}}
+Accept: application/json
+
+--boundary
+Content-Disposition: form-data; name="NewProductLot"
+Content-Type: application/json
+
+{
+  "productLabel": "Pomme Golden",
+  "productDescription": "Sweet uikuiand refreshing summer melon.",
+  "unit": "pi",
+  "productType": "Fruits",
+  "producer": 2,
+  "unitPrice": 1.8,
+  "initialQuantity": 30,
+  "availabilityDate": "2026-04-15T00:00:00"
+}
+--boundary
+Content-Disposition: form-data; name="image"; filename="golden-apple.png"
+Content-Type: image/png
+
+
+< ./golden-apple.png
+--boundary--
+
+###  update image of lot 2
+# Expected: 200 Updated
+PUT {{baseurl}}/product-lots/2/image
+Accept: application/json
+Authorization: {{userToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="new-product-image.png"
+Content-Type: image/png
+
+< ./golden-apple.png
+--boundary--
+
+###  update image of lot 2
+# Expected: 400 bad request
+PUT {{baseurl}}/product-lots/2/image
+Accept: application/json
+Authorization: {{userToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+###  update image of lot 2
+# Expected: 404 Updated
+PUT {{baseurl}}/product-lots/1000/image
+Accept: application/json
+Authorization: {{userToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="new-product-image.png"
+Content-Type: image/png
+
+< ./golden-apple.png
+--boundary--
+
+###  Create a new product and lot with image but not existing type
+# Expected: 400 bad request
+POST http://localhost:3000/product-lots/
+Content-Type: multipart/form-data; boundary=boundary
+Authorization: {{userToken}}
+Accept: application/json
+
+--boundary
+Content-Disposition: form-data; name="NewProductLot"
+Content-Type: application/json
+
+{
+  "productLabel": "pizaaaa",
+  "productDescription": "juicy shing summer melon.",
+  "unit": "piza",
+  "productType": "juiucye pizza",
+  "producer":2,
+  "unitPrice": 11000,
+  "initialQuantity": 10,
+  "availabilityDate": "2026-04-20T00:00:00"
+}
+--boundary
+Content-Disposition: form-data; name="image"; filename="golden-apple.png"
+Content-Type: image/png
+
+< ./golden-apple.png
+--boundary--
+
+
+
+### Login the admin user (status code: 200)
+POST {{baseurl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "admin@terroircie.be",
+  "password": "Admin1-"
+}
+
+> {%
+  client.global.set("adminToken", response.body.token);
+%}
+
+
+### Get stats for a product without filters (all lots) 200 OK
+GET {{baseurl}}/product-lots/stats?productLabel=Pomme%20Golden
+Accept: application/json
+Authorization: {{adminToken}}
+
+### Get stats for a product without filters (all lots) 200 OK
+GET {{baseurl}}/product-lots/stats?productLabel=lololol
+Accept: application/json
+Authorization: {{adminToken}}
+
+### Get stats for a product without filters (not existing product) 404 OK
+GET {{baseurl}}/product-lots/stats?productLabel=lololol
+Accept: application/json
+Authorization: {{adminToken}}
+
+### Get stats for a product with month (existing sales) 200 OK
+GET {{baseurl}}/product-lots/stats?productLabel=Pomme%20Golden&month=4
+Accept: application/json
+Authorization: {{adminToken}}
+
+### Get stats for a product with month and year (existing sales) 200 OK
+GET {{baseurl}}/product-lots/stats?productLabel=Pomme%20Golden&month=1&year=2025
+Accept: application/json
+Authorization: {{adminToken}}
+
+### Get stats for a product with month/year (no sales but received) 200 OK
+GET {{baseurl}}/product-lots/stats?productLabel=Pomme%20Golden&year=2024
+Accept: application/json
+Authorization: {{adminToken}}
+
+
+###  Get stats for a non-existent product 404
+GET {{baseurl}}/product-lots/stats?productLabel=product
+Accept: application/json
+Authorization: {{adminToken}}
+
+### Update lot state - valid request (lot exists)
+# Expected: 200 OK
+PUT {{baseurl}}/product-lots/1/state?newState=REJECTED
+Authorization: {{adminToken}}
+
+### Update lot state - lot does not exist
+# Expected: 404 Not Found
+PUT {{baseurl}}/product-lots/9999/state?newState=REJECTED
+Authorization: {{adminToken}}
+
+### Update lot state - invalid state value
+# Expected: 400 Bad Request
+PUT {{baseurl}}/product-lots/1/state?newState=INVALID_STATE
+Authorization: {{adminToken}}
+
+### Remove remaining qty of lot state
+# Expected: 200
+PATCH {{baseurl}}/product-lots/remove/1?qty=5
+Authorization: {{adminToken}}
+

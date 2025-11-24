@@ -1,0 +1,92 @@
+### Login en tant que manager (obligatoire pour créer open sale)
+POST http://localhost:3000/auths/login
+Content-Type: application/json
+
+{
+  "email": "adminEmail",
+  "password": "admin"
+}
+
+> {%
+  client.global.set("managerToken", response.body.token);
+%}
+
+###
+### Create a valid Open Sale (200 Created)
+POST http://localhost:3000/open_sales/
+Content-Type: application/json
+Authorization: {{managerToken}}
+
+{
+  "reservedProducts": [
+    {
+      "productLotId": 1,
+      "quantity": 3
+    },
+    {
+      "productLotId": 2,
+      "quantity": 1
+    }
+  ]
+}
+
+###
+### Create an invalid Open Sale (400 Bad Request)
+POST http://localhost:3000/open_sales/
+Content-Type: application/json
+Authorization: {{managerToken}}
+
+{
+  "reservedProducts": [
+    {
+      "productLotId": null,
+      "quantity": 3
+    }
+  ]
+}
+
+###
+### Create Open Sale without authentication (401 Unauthorized)
+POST http://localhost:3000/open_sales/
+Content-Type: application/json
+
+{
+  "reservedProducts": [
+    {
+      "productLotId": 1,
+      "quantity": 2
+    }
+  ]
+}
+
+### get All Open Sales
+GET http://localhost:3000/open_sales/all
+Content-Type: application/json
+Authorization: {{managerToken}}
+
+
+POST http://localhost:3000/auths/login
+Content-Type: application/json
+
+{
+  "email": "producer@terroircie.be",
+  "password": "Password1!"
+}
+
+> {%
+  client.global.set("producerToken", response.body.token);
+%}
+
+### Create Open Sale with forbidden role (403 Forbidden)
+POST http://localhost:3000/open_sales/
+Content-Type: application/json
+Authorization: {{producerToken}}
+
+{
+  "reservedProducts": [
+    {
+      "productLotId": 1,
+      "quantity": 2
+    }
+  ]
+}

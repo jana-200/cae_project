@@ -1,0 +1,70 @@
+### Login the admin user (status code: 200)
+POST http://localhost:3000/auths/login
+Content-Type: application/json
+
+{
+  "email": "admin@terroircie.be",
+  "password": "Admin1-"
+}
+
+> {%
+  client.global.set("adminToken", response.body.token);
+%}
+
+### Retrieve all product types (200)
+GET http://localhost:3000/product-types/
+Accept: application/json
+
+### Create a new product type (200)
+POST http://localhost:3000/product-types/
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "label": "Famillex"
+}
+
+### Try to add an empty product type (400)
+POST http://localhost:3000/product-types/
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "label": ""
+}
+
+### Try to add an already existing type (e.g., "Fruit") (409)
+POST http://localhost:3000/product-types/
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "label": "Fruit"
+}
+
+### Update an existing product type
+PUT http://localhost:3000/product-types/1
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "label": "TestModification"
+}
+
+### Try to update a label with an empty one (400 expected)
+PUT http://localhost:3000/product-types/1
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "label": ""
+}
+
+### Try to update a non-existent product type (404 expected)
+PUT http://localhost:3000/product-types/999
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "label": "QuelqueChose"
+}

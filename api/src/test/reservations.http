@@ -1,0 +1,159 @@
+@baseUrl = http://localhost:3000
+
+### First we Create and login a customer (200) or (409) if exists
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "user",
+  "password": "user",
+  "title": "Mr",
+  "firstname": "Regular",
+  "lastname": "User",
+  "phoneNumber": "1234567890",
+  "role": "CUSTOMER",
+  "address": {
+    "street": "789 User Road",
+    "number": "5",
+    "postalCode": "99999",
+    "country": "USA",
+    "city": "Chicago"
+  }
+}
+
+### Login user (200)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "user",
+  "password": "user"
+}
+
+> {%
+  client.global.set("userToken", response.body.token);
+%}
+
+### Create a reservation with 2 products (should return 200) or 400 if date is before today
+POST {{baseUrl}}/reservations
+Content-Type: application/json
+Authorization: {{userToken}}
+
+{
+  "recoveryDate": "2026-04-30",
+  "reservedProducts": [
+    {
+      "productLotId": 3,
+      "quantity": 2
+    }
+  ]
+}
+
+
+### Reserve the rest of the available stock (should return 200)
+POST {{baseUrl}}/reservations
+Content-Type: application/json
+Authorization: {{userToken}}
+
+{
+  "recoveryDate": "2026-04-14",
+  "reservedProducts": [
+    {
+      "productLotId": 3,
+      "quantity": 4
+    }
+  ]
+}
+
+
+### Try to reserve when no stock left (should return 409)
+POST {{baseUrl}}/reservations
+Content-Type: application/json
+Authorization: {{userToken}}
+
+{
+  "recoveryDate": "2025-04-14",
+  "reservedProducts": [
+    {
+      "productLotId": 3,
+      "quantity": 8
+    }
+  ]
+}
+
+### Try to reserve when reserdes poduct is empty (should return 400)
+POST {{baseUrl}}/reservations
+Content-Type: application/json
+Authorization: {{userToken}}
+
+{
+  "recoveryDate": "2025-04-14",
+  "reservedProducts": [
+
+  ]
+}
+
+
+### Get all reservations for the logged-in user
+GET {{baseUrl}}/reservations/1
+Authorization: {{userToken}}
+
+### Get a reservations for the logged-in user (could be 403 if not his reservation)
+GET {{baseUrl}}/reservations/1
+Authorization: {{userToken}}
+
+
+
+### Delete a reservation (200) could throw (409) if state is not "RESERVED"
+DELETE {{baseUrl}}/reservations/1
+Authorization: {{userToken}}
+
+### Delete a reservation with inexistant id (should return 404)
+DELETE {{baseUrl}}/reservations/450
+Authorization: {{userToken}}
+
+### Delete a reservation with invalid id (should return 400)
+DELETE {{baseUrl}}/reservations/-1
+Authorization: {{userToken}}
+
+
+### First login the admin user (status code: 200)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "admin@terroircie.be",
+  "password": "Admin1-"
+}
+
+> {%
+  client.global.set("managerToken", response.body.token);
+%}
+
+### Retrieve all reservations (200)
+GET {{baseUrl}}/reservations/all
+Authorization: {{managerToken}}
+
+
+### Try to retrieve all reservations without token (401)
+GET {{baseUrl}}/reservations/all
+
+
+### Update reservation state to ABANDONED (should return 200)
+PATCH {{baseUrl}}/reservations/1/state?newState=ABANDONED
+Authorization: {{managerToken}}
+
+### Update reservation state to RETRIEVED (should return 200)
+PATCH {{baseUrl}}/reservations/3/state?newState=RETRIEVED
+Authorization: {{managerToken}}
+
+### Update reservation with blank state (should return 400)
+PATCH {{baseUrl}}/reservations/1/state?newState=
+Authorization: {{managerToken}}
+
+### Update reservation with non-existing ID (should return 404)
+PATCH {{baseUrl}}/reservations/999/state?newState=RETRIEVED
+Authorization: {{managerToken}}
+
+### Update reservation without token (should return 401)
+PATCH {{baseUrl}}/reservations/1/state?newState=RETRIEVED
