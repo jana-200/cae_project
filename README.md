@@ -77,7 +77,7 @@ L'application repose sur une base de données relationnelle comprenant les entit
 
 ---
 
-## 🎨 Aperçu de l'Interface (Prototypes)
+## 🎨 Petit aperçu de l'Interface
 
 L'interface a été pensée pour être fluide et intuitive :
 * **Design Responsive :** Adapté au défilement et au contenu.
@@ -86,9 +86,12 @@ L'interface a été pensée pour être fluide et intuitive :
 
 ![WhatsApp Image 2025-11-24 at 21 23 15_ac58ec43](https://github.com/user-attachments/assets/84055bcd-f477-4341-879f-b16fd4753eac)
 ![WhatsApp Image 2025-11-24 at 21 23 29_e8533805](https://github.com/user-attachments/assets/9d744d17-bd67-4696-9069-57594b6c4272)
+![WhatsApp Image 2025-11-24 at 21 25 14_f727cb4a](https://github.com/user-attachments/assets/ee4aec8c-50b7-4ca2-b943-50210ea66c0b)
+![WhatsApp Image 2025-11-24 at 21 25 14_ea8fa4a8](https://github.com/user-attachments/assets/becaf75d-f63e-4206-a85d-aff7d54f9f54)
 
 
 ---
 
 
 *Ce projet a été réalisé dans le cadre du cours de conception d'applications d'etntreprise - 2024/2025.*
+![Note](https://img.shields.io/badge/Note_Finale-17.8%2F20-brightgreen?style=for-the-badge&logo=school)
